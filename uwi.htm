@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignación de UWIS</title>
+
+    <!-- Estilos CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            background-color: #3498db;
+            color: #fff;
+            padding: 20px;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px auto;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #BA0000; /* Cambio de color a rojo */
+            color: #FFFFFF; /* Letras blancas */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #800000; /* Cambio de color al pasar el cursor */
+        }
+
+        #resultado {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Estilos para la imagen de fondo */
+        body::before {
+            content: "";
+            background-image: url('https://s202.q4cdn.com/389131578/files/design/slide-news-4.jpeg');
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Estilos para el logo en la esquina superior derecha */
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px; /* Ajusta el tamaño según tus preferencias */
+        }
+    </style>
+</head>
+<body>
+    <img class="logo" src="https://www.geo-park.com/wp-content/uploads/2022/01/geopark-logo.svg" alt="Logo">
+
+    <h1>Asignación de UWIS</h1>
+    <p>Ingrese el nombre del pozo o WellBore:</p>
+    <input type="text" id="pozoInput">
+    <button onclick="calcularUWI()">Calcular UWI</button>
+    <p id="resultado"></p>
+
+    <!-- Código JavaScript -->
+    <script>
+         function calcularUWI() {
+            const nombrePozo = document.getElementById("pozoInput").value.toUpperCase().replace(/[-_#]/g, " ");
+            const pozoSplit = nombrePozo.split(" ");
+            const longitud = pozoSplit.length;
+            const coordenadas = asignarCoordenadas(pozoSplit);
+            const letras = obtenerLetras(pozoSplit);
+            const numeros = obtenerNumeros(nombrePozo, pozoSplit, longitud);
+            const especiales = asignarEspeciales(pozoSplit);
+
+            if (numeros === "9999") {
+                document.getElementById("resultado").innerText = "Por el momento no contamos con tantos pozos perforados,\nesperamos llegar pronto a ese número.";
+            } else {
+                const uwi = letras + numeros + coordenadas + especiales;
+                document.getElementById("resultado").innerText = `El UWI es: ${uwi}`;
+            }
+        }
+
+        function asignarCoordenadas(nomsplit) {
+            const mapa = {
+                "SUR": "S",
+                "S": "S",
+                "NORTE": "N",
+                "N": "N",
+                "ESTE": "E",
+                "E": "E",
+                "OESTE": "O",
+                "O": "O",
+                "W": "O",
+                "SURESTE": "SE",
+                "SE": "SE",
+                "NORESTE": "NE",
+                "NE": "NE",
+                "SO": "SO",
+                "SUROESTE": "SO",
+                "SW": "SO",
+                "NOROESTE": "NO",
+                "NO": "NO",
+                "NW": "NO",
+                "CENTRAL": "C",
+            };
+
+            const coordenadas = nomsplit.map(i => mapa[i] || "").join("");
+            return coordenadas;
+        }
+
+        function obtenerLetras(nomsplit) {
+            const primeraPalabra = nomsplit[0];
+            let letras = "";
+
+            if (primeraPalabra.length < 4) {
+                console.log("Se necesitan al menos 4 letras en la primera palabra para el nombre del pozo.");
+                return "";
+            }
+
+            if (primeraPalabra.length >= 4) {
+                letras = primeraPalabra.slice(0, 4);
+            }
+
+            return letras;
+        }
+
+        function obtenerNumeros(cadena, split, longitud) {
+            const digitos = cadena.match(/\d+/);
+            if (digitos !== null) {
+                const numero = digitos[0];
+                const tamano = numero.length;
+                if (tamano === 4) {
+                    return numero;
+                } else if (tamano < 4) {
+                    return "0".repeat(4 - tamano) + numero;
+                }
+            }
+
+            if (longitud === 1) {
+                return "0000";
+            }
+
+            for (const i of split) {
+                if (!isNaN(i)) {
+                    const num = i;
+                    const tamano = num.length;
+                    if (tamano === 4) {
+                        return num;
+                    } else if (tamano < 4) {
+                        return "0".repeat(4 - tamano) + num;
+                    }
+                }
+            }
+
+            return "9999";
+        }
+
+        function asignarEspeciales(palabras) {
+            const especiales = palabras
+                .filter(word => !isNaN(word))
+                .map(word => {
+                    if (word.length >= 2) {
+                        if (word[word.length - 1] === "T" && word[word.length - 2] === "S") {
+                            return "ST" + word[word.length - 1];
+                        }
+                    }
+                    return word;
+                })
+                .join("");
+
+            return especiales;
+        }
+    </script>
+</body>
+</html>
